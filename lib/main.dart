@@ -1,3 +1,5 @@
+// ignore_for_file: camel_case_types, library_private_types_in_public_api
+
 import 'package:lorem_ipsum/lorem_ipsum.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
@@ -26,13 +28,14 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
+
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
   final String title = "Card Examples";
-  final String text = loremIpsum(words: 100);
+  final String text = loremIpsum(words: 150, paragraphs: 2);
 
   @override
   Widget build(BuildContext context) {
@@ -41,30 +44,80 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(title),
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CardInfo(name: "Panecillo", location: "Quito, Ecuador", description: text),
-              CardInfo(name: "Malecon 2000", location: "Guayaquil, Ecuador", description: text),
-              CardInfo(name: "Báscilica del Voto Nacional", location: "Quito, Ecuador", description: text),
-              CardInfo(name: "Nueva Prosperina", location: "Guayaquil, Ecuador", description: text),
-              CardInfo(name: "La Colmena", location: "Quito, Ecuador", description: text),
-            ],
-          ),
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            bool isWideScreen = constraints.maxWidth > constraints.maxHeight;
+        
+            return Center(
+              child: isWideScreen
+                  ? SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: _buildCards(),
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: _buildCards(),
+                      ),
+                    ),
+            );
+          },
         ),
       ),
     );
   }
+
+  List<Widget> _buildCards() {
+    return [
+      CardInfo(
+        name: "Panecillo",
+        location: "Quito, Pichincha - Ecuador",
+        description: text,
+        imagePath: 'images/panecillo.png',
+      ),
+      CardInfo(
+        name: "Malecon 2000",
+        location: "Guayaquil, Guayas - Ecuador",
+        description: text,
+        imagePath: 'images/malecon.jpg',
+      ),
+      CardInfo(
+        name: "Báscilica del Voto Nacional",
+        location: "Quito, Pichincha - Ecuador",
+        description: text,
+        imagePath: 'images/basilica.jpg',
+      ),
+      CardInfo(
+        name: "Cuenca",
+        location: "Azuay, Ecuador",
+        description: text,
+        imagePath: 'images/cueenca.jpg',
+      ),
+      CardInfo(
+        name: "Riobamba",
+        location: "Chimborazo, Ecuador",
+        description: text,
+        imagePath: 'images/riobamba.jpg',
+      ),
+    ];
+  }
 }
 
 class CardInfo extends StatelessWidget {
-  const CardInfo({super.key, required this.name, required this.location, required this.description});
+  const CardInfo({super.key, required this.name, required this.location, required this.description, required this.imagePath});
 
   final String name;
   final String location;
   final String description;
+  final String imagePath;
 
   @override
   Widget build(BuildContext context) {
@@ -72,26 +125,25 @@ class CardInfo extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const ImageCard(),
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: 200, // Altura fija del contenedor
+                minWidth: 300, // Ancho que se expande al máximo
+              ),
+              child: Image.asset(imagePath, fit: BoxFit.cover),
+            ),
+          ),
           TitleSection(name: name, location: location),
-          const buttonSection(),
+          const ButtonSection(),
           TextSection(description: description)
         ],
       ),
     );
   }
 }
-
-class ImageCard extends StatelessWidget {
-  const ImageCard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset("images/mge.jpg");
-  }
-}
-
 
 class TitleSection extends StatelessWidget {
   const TitleSection({super.key, required this.name, required this.location});
@@ -101,20 +153,22 @@ class TitleSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     int random(int min, int max) {
       return min + Random().nextInt(max - min);
     }
 
-    String scored =  random(1, 100).toString();
+    String scored = random(1, 100).toString();
 
     return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
+      padding: const EdgeInsets.all(25),
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 600), // Agregamos restricciones aquí
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -127,26 +181,25 @@ class TitleSection extends StatelessWidget {
                       ),
                       Text(location, style: TextStyle(color: Colors.grey[500])),
                     ],
-                  )
-              ),
-              Icon(
-                Icons.star,
-                color: Colors.red[500],
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-              Text(scored)
-            ],
-          ),
-        ],
+                  ),
+                ),
+                Icon(
+                  Icons.star,
+                  color: Colors.red[500],
+                ),
+                const SizedBox(width: 10),
+                Text(scored),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class buttonSection extends StatelessWidget {
-  const buttonSection({super.key});
+class ButtonSection extends StatelessWidget {
+  const ButtonSection({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -175,11 +228,7 @@ class buttonSection extends StatelessWidget {
 }
 
 class ButtonText extends StatelessWidget {
-  const ButtonText(
-      {super.key,
-      required this.label,
-      required this.color,
-      required this.icon});
+  const ButtonText({super.key, required this.label, required this.color, required this.icon});
 
   final IconData icon;
   final String label;
@@ -187,16 +236,19 @@ class ButtonText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          icon,
-          color: color,
-        ),
-        const SizedBox(height: 5,),
-        Text(label, style: TextStyle(color: color))
-      ],
+    return TextButton(
+      style: ButtonStyle(
+        foregroundColor: WidgetStateProperty.all(color),
+      ),
+      onPressed: () {},
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon),
+          const SizedBox(height: 10),
+          Text(label),
+        ],
+      ),
     );
   }
 }
